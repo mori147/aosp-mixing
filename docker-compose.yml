@@ -14,7 +14,8 @@ services:
       - /mnt/storage/ss20:/mnt/storage/note10
       - /mnt/storage/note10/out:/mnt/storage/note10/out
       - /mnt/storage/note10/vendor:/mnt/storage/note10/vendor
-      - /mnt/storage/note10/device:/mnt/storage/note10/device
+      - /mnt/storage/note10/device/samsung:/mnt/storage/note10/device/samsung
+      - /mnt/storage/note10/device/samsung_slsi:/mnt/storage/note10/device/samsung_slsi
       - /mnt/storage/note10/kernel:/mnt/storage/note10/kernel
       # 需要排除的目录 /mnt/storage/ss20/out /mnt/storage/ss20/device
     restart: unless-stopped
