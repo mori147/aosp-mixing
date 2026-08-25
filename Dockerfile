@@ -80,6 +80,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gperf \
     && rm -rf /var/lib/apt/lists/*
 
-
 USER toor
-WORKDIR /toor
+
+WORKDIR /mnt/storage/note10
