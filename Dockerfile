@@ -82,4 +82,4 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 USER toor
 
-WORKDIR /mnt/storage/note10
+WORKDIR /mnt/storage/lineageos23

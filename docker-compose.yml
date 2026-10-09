@@ -1,20 +1,51 @@
-version: "3.9"
+# 源码树整棵挂进容器（设备树留在树内，保证 .git 软链指向树内 .repo）；
+# 用空目录遮住不属于本机型的另一套设备树：
+#   note10 = d2x + exynos9820-common + kernel exynos9820
+#   s20    = x1s + universal9830-common + kernel universal9830
+# out 与 ccache 按机型隔离。
+x-common: &common
+  build: .
+  privileged: true
+  stdin_open: true
+  tty: true
+  working_dir: /mnt/storage/lineageos23
+  restart: unless-stopped
+  environment: &common-env
+    - USE_CCACHE=1
+    - CCACHE_DIR=/ccache
+    - CCACHE_MAXSIZE=50G
+    - GIT_CONFIG_COUNT=1
+    - GIT_CONFIG_KEY_0=credential.helper
+    - GIT_CONFIG_VALUE_0=store
+
+x-tree: &tree /mnt/storage/lineageos23:/mnt/storage/lineageos23
+x-empty: &empty /mnt/storage/lineage-docker/empty
+
 services:
-  aosp:
-    build: .
-    container_name: aosp-builder
-    privileged: true
-    stdin_open: true
-    tty: true
-    environment:
-      - USE_CCACHE=1
-      - CCACHE_DIR=/ccache
-      - CCACHE_MAXSIZE=50G
+  note10:
+    <<: *common
+    container_name: note10-builder
     volumes:
-      - /mnt/storage/ss20:/mnt/storage/note10
-      - /mnt/storage/note10/out:/mnt/storage/note10/out
-      - /mnt/storage/note10/vendor/samsung:/mnt/storage/note10/vendor/samsung
-      - /mnt/storage/note10/device/samsung:/mnt/storage/note10/device/samsung
-      - /mnt/storage/note10/kernel/samsung:/mnt/storage/note10/kernel/samsung
-      # 需要排除的目录 /mnt/storage/ss20/out /mnt/storage/ss20/device
-    restart: unless-stopped
+      - *tree
+      # 遮住 s20 那一套 (x1s + universal9830)
+      - /mnt/storage/lineage-docker/empty/device-samsung-x1s:/mnt/storage/lineageos23/device/samsung/x1s
+      - /mnt/storage/lineage-docker/empty/device-samsung-universal9830-common:/mnt/storage/lineageos23/device/samsung/universal9830-common
+      - /mnt/storage/lineage-docker/empty/vendor-samsung-x1s:/mnt/storage/lineageos23/vendor/samsung/x1s
+      - /mnt/storage/lineage-docker/empty/vendor-samsung-universal9830-common:/mnt/storage/lineageos23/vendor/samsung/universal9830-common
+      - /mnt/storage/lineage-docker/empty/kernel-samsung-universal9830:/mnt/storage/lineageos23/kernel/samsung/universal9830
+      - /mnt/storage/lineageos-out/note10:/mnt/storage/lineageos23/out
+      - /mnt/storage/ccache/note10:/ccache
+
+  s20:
+    <<: *common
+    container_name: s20-builder
+    volumes:
+      - *tree
+      # 遮住 note10 那一套 (d2x + exynos9820)
+      - /mnt/storage/lineage-docker/empty/device-samsung-d2x:/mnt/storage/lineageos23/device/samsung/d2x
+      - /mnt/storage/lineage-docker/empty/device-samsung-exynos9820-common:/mnt/storage/lineageos23/device/samsung/exynos9820-common
+      - /mnt/storage/lineage-docker/empty/vendor-samsung-d2x:/mnt/storage/lineageos23/vendor/samsung/d2x
+      - /mnt/storage/lineage-docker/empty/vendor-samsung-exynos9820-common:/mnt/storage/lineageos23/vendor/samsung/exynos9820-common
+      - /mnt/storage/lineage-docker/empty/kernel-samsung-exynos9820:/mnt/storage/lineageos23/kernel/samsung/exynos9820
+      - /mnt/storage/lineageos-out/s20:/mnt/storage/lineageos23/out
+      - /mnt/storage/ccache/s20:/ccache
